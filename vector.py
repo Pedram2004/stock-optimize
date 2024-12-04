@@ -1,20 +1,25 @@
 import numpy as np
-
+from typing import Iterable
 
 class Vector:
     __covariance_matrix: np.array
     __expected_return: np.array
 
-    def __init__(self, vector: list):
+    def __init__(self, vector: Iterable):
         self.__vector = np.array(vector)
+        self.__fitness = self.__fitness_func()
 
     @property
-    def values(self) -> np.array:
+    def vector(self) -> np.array:
         return np.copy(self.__vector)
 
     @property
     def fitness(self) -> float:
-        return self.__fitness_func()
+        return self.__fitness
+
+    @classmethod
+    def len(cls) -> int:
+        return len(cls.__expected_return)
 
     @classmethod
     def set_class_variables(cls, expected_return, covariance_matrix):
