@@ -5,6 +5,7 @@ import heapq
 
 class Population:
     __MUTATION_NORMAL_DEVIATION = 0.3
+    __MUTATION_PERCENTAGE = 0.03
     __ELITE_PERCENTAGE = 0.1
     __LOWER_POTENTIAL_PERCENTAGE = 0.1
     __MATING_POOL_PERCENTAGE = 0.8
@@ -34,8 +35,8 @@ class Population:
         return mating_pool
 
     @staticmethod
-    def __uniform_cross_over(vector1: Vector, vector2: Vector) -> list[Vector]:
-        lookup_dict = {0: vector1.values, 1: vector2.values}
+    def __uniform_cross_over(vector_pair: list[Vector]) -> list[Vector]:
+        lookup_dict = {i: vector for i, vector in enumerate(vector_pair)}
         children: list[list] = [[], []]
 
         for i in range(Vector.len()):
@@ -56,20 +57,35 @@ class Population:
 
         return Vector(values)
 
-    def genetic_algorithm(self) -> list[int]:
+    def genetic_algorithm(self) -> list[float]:
+        highest_fitness_chromosomes: list[float] = []
         for i in range(self.__num_iteration):
+            new_generation: list[Vector] = []
             current_population: list[Vector] = self.__population.copy()
 
             Vector.max_comparison(True)
             heapq.heapify(current_population)
-            elite_individuals: list[Vector] = []
             for j in range(int(self.__num_individuals * Population.__ELITE_PERCENTAGE)):
-                elite_individuals.append(heapq.heappop(current_population))
+                new_generation.append(heapq.heappop(current_population))
 
             Vector.max_comparison(False)
             heapq.heapify(current_population)
-            low_potential_individuals: list[Vector] = []
             for j in range(int(self.__num_individuals * Population.__LOWER_POTENTIAL_PERCENTAGE)):
-                low_potential_individuals.append(heapq.heappop(current_population))
+                new_generation.append(heapq.heappop(current_population))
 
             mating_pool = self.__selection()
+            new_generation_percentage = (
+                    (1 - (Population.__LOWER_POTENTIAL_PERCENTAGE + Population.__ELITE_PERCENTAGE)) / 2)
+            for j in range(int(self.__num_individuals * new_generation_percentage)):
+                parents_indices = [k for k in np.random.randint(low=0, high=int(
+                    self.__num_individuals * Population.__MATING_POOL_PERCENTAGE), size=2)]
+                new_generation.extend(Population.__uniform_cross_over([mating_pool[k] for k in parents_indices]))
+
+            for j in range(int(self.__num_individuals * Population.__MUTATION_PERCENTAGE)):
+                random_index = np.random.randint(low=0, high=self.__num_individuals + 1, size=1)
+                new_generation[random_index] = Population.__mutate(new_generation[random_index])
+
+            self.__population = new_generation
+            highest_fitness_chromosomes.append((max(self.__population)).fitness)
+
+        return highest_fitness_chromosomes
