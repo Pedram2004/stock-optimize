@@ -4,9 +4,10 @@ import numpy as np
 class Vector:
     __covariance_matrix: np.array
     __expected_return: np.array
+    __max_comparison: bool = False
 
     def __init__(self, vector: np.array):
-        self.__values = np.divide(vector, np.sum(vector))
+        self.values = vector
         self.__fitness = self.__fitness_func()
 
     def __eq__(self, other):
@@ -17,7 +18,11 @@ class Vector:
 
     def __lt__(self, other):
         if isinstance(other, Vector):
-            return self.__fitness < other.__fitness
+            boolean_value = self.__fitness < other.__fitness
+            if Vector.__max_comparison:
+                boolean_value = not boolean_value
+
+            return boolean_value
 
         return False
 
@@ -38,7 +43,11 @@ class Vector:
         return len(cls.__expected_return)
 
     @classmethod
-    def set_class_variables(cls, expected_return, covariance_matrix):
+    def max_comparison(cls, boolean_value: bool):
+        cls.__max_comparison = boolean_value
+
+    @classmethod
+    def set_class_variables(cls, expected_return: list, covariance_matrix: list[list]):
         cls.__covariance_matrix = np.array(covariance_matrix)
         cls.__expected_return = np.array(expected_return)
 
