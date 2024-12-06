@@ -95,15 +95,8 @@ class GeneticAlgorithmOptimizer(Optimizer):
             
         return fittest
     
-    def get_plot(self) -> plt.Figure:
-        fig, ax = plt.subplots()
-        ax.plot(x=range(self._num_iterations), y=self.__iterations)
-        ax.set_title(f'Genetic Algorithm - Solution Fitness: {self.__iterations[-1]}')
-        ax.set_xlabel('Iterations')
-        ax.set_ylabel('Fitness')
-        ax.set_color('red')
-        ax.legend(['Genetic Algorithm'], loc='lower right')
-        return fig
+    def get_plot_info(self) -> tuple[range, list[float]]:
+        return range(self._num_iterations), self.__iterations
 
 class BeamSearchOptimizer(Optimizer):
     def __init__(self, beam_length: int, num_iterations: int, learning_rate: float = 0.1, random_state: int = 42):
@@ -124,15 +117,8 @@ class BeamSearchOptimizer(Optimizer):
             self.__iterations.append(max(self.__beam).fitness)
         return max(self.__beam, key=lambda x: x.fitness)
 
-    def get_plot(self) -> plt.Figure:
-        fig, ax = plt.subplots()
-        ax.plot(x=range(self._num_iterations), y=self.__iterations)
-        ax.set_title(f'Beam Search (Heuristic) - Solution Fitness: {self.__iterations[-1]}')
-        ax.set_xlabel('Iterations')
-        ax.set_ylabel('Fitness')
-        ax.set_color('blue')
-        ax.legend(['Beam Search'], loc='upper right')
-        return fig
+    def get_plot_info(self) -> tuple[range, list[float]]:
+        return range(self._num_iterations), self.__iterations
 
 
 class RandomBeamSearchOptimizer(Optimizer):
@@ -156,15 +142,8 @@ class RandomBeamSearchOptimizer(Optimizer):
             self.__iterations.append(max(self.__beam).fitness)
         return max(self.__beam, key=lambda x: x.fitness)
 
-    def get_plot(self) -> plt.Figure:
-        fig, ax = plt.subplots()
-        ax.plot(x=range(self._num_iterations), y=self.__iterations)
-        ax.set_title(f'Random Local Beam Search (Heuristic) - Solution Fitness: {self.__iterations[-1]}')
-        ax.set_xlabel('Iterations')
-        ax.set_ylabel('Fitness')
-        ax.set_color('orange')
-        ax.legend(['Random Local Beam Search'], loc='lower right')
-        return fig
+    def get_plot_info(self) -> tuple[range, list[float]]:
+        return range(self._num_iterations), self.__iterations
 
 
 class SimulatedAnnealingOptimizer(Optimizer):
@@ -178,7 +157,7 @@ class SimulatedAnnealingOptimizer(Optimizer):
 
     def __perturbate(self) -> Vector:
         if self.__current_state != self.__neighbours[0]:
-            self.__neighbours = (self.__current_state, self.__current_state.get_neighbours(radius=self.__LEARNING_RATE))
+            self.__neighbours = (self.__current_state, self.__current_state.get_neighbours(self.__LEARNING_RATE))
         new_state = np.random.choice(self.__neighbours[1])
         self.__neighbours[1].remove(new_state)
         return new_state
@@ -202,13 +181,7 @@ class SimulatedAnnealingOptimizer(Optimizer):
             self.__iterations.append(self.__current_state.fitness)
         return self.__current_state
 
-    def get_plot(self) -> plt.Figure:
-        fig, ax = plt.subplots()
-        ax.plot(x=range(self._num_iterations), y=self.__iterations)
-        ax.set_title(f'Simulated Annealing - Solution Fitness: {self.__iterations[-1]}')
-        ax.set_xlabel('Iterations')
-        ax.set_ylabel('Fitness')
-        ax.set_color('green')
-        ax.legend(['Simulated Annealing'], loc='lower right')
-        return fig
+    
+    def get_plot_info(self) -> tuple[range, list[float]]:
+        return range(self._num_iterations), self.__iterations
     

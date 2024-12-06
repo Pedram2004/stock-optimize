@@ -13,5 +13,5 @@ class Optimizer(ABC):
         pass
 
     @abstractmethod
-    def get_plot(self) -> plt.Figure:
+    def get_plot_info(self) -> tuple[range, list[float]]:
         pass

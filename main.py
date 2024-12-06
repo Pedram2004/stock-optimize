@@ -1,14 +1,26 @@
 from vector import Vector
 from optimizer import Optimizer, GeneticAlgorithmOptimizer, BeamSearchOptimizer, RandomBeamSearchOptimizer, SimulatedAnnealingOptimizer
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
+from time import time
 
-def combine_plots(optimizers: list[Optimizer]):
+def combine_plots(optimizers: dict[str, Optimizer]):
+    col = {
+        'Beam Search': 'blue',
+        'Random Beam Search': 'orange',
+        'Simulated Annealing': 'green',
+        'Genetic Algorithm': 'red'
+    }
     fig, axs = plt.subplots(2, 2, figsize=(10, 8))
-    for optimizer, ax in zip(optimizers, axs.flat):
-        chart = optimizer.get_plot()
-        for line in chart.axes[0].get_lines():
-            ax.plot(line.get_xdata(), line.get_ydata())
-        ax.set_title(chart.axes[0].get_title())
+    axs = axs.flatten()
+
+    for ax, (optimizer_name, optimizer) in zip(axs, optimizers.items()):
+        x, y = optimizer.get_plot_info()
+        ax.plot(x, y, color=col[optimizer_name])
+        ax.set_title(f'{optimizer_name} - Solution Fitness: {y[-1]}')
+        ax.set_xlabel('Iterations')
+        ax.set_ylabel('Fitness')
+        ax.legend([optimizer_name])
+
     plt.tight_layout()
     plt.show()
 
@@ -19,30 +31,37 @@ if __name__ == '__main__':
         covariance_matrix = [list(map(float, line.split())) for line in lines[1:]]
     
     Vector.set_class_variables(expected_return, covariance_matrix)
+    
+    # random_state = int(time())
+    random_state = 42
 
     print("-----------------Beam Search-----------------")
-    beam_search = BeamSearchOptimizer(10, 100, 0.001)
+    beam_search = BeamSearchOptimizer(10, 100, 0.001, random_state)
     answer = beam_search.optimize()
     print("fitness: ", answer.fitness)
     print("values: ", answer.values)
 
     print("-----------------Random Beam Search-----------------")
-    random_beam_search = RandomBeamSearchOptimizer(10, 100, 0.001)
+    random_beam_search = RandomBeamSearchOptimizer(10, 100, 0.001, random_state)
     answer = random_beam_search.optimize()
     print("fitness: ", answer.fitness)
     print("values: ", answer.values)
 
     print("-----------------Simulated Annealing-----------------")
-    simulated_annealing = SimulatedAnnealingOptimizer(100, 0.001)
+    simulated_annealing = SimulatedAnnealingOptimizer(100, 0.001, random_state)
     answer = simulated_annealing.optimize()
     print("fitness: ", answer.fitness)
     print("values: ", answer.values)
 
-    print("-----------------Genetic Algorithm-----------------")
-    genetic = GeneticAlgorithmOptimizer(100, 100)
-    answer = genetic.optimize()
-    print("fitness: ", answer.fitness)
-    print("values: ", answer.values)
+    # print("-----------------Genetic Algorithm-----------------")
+    # genetic = GeneticAlgorithmOptimizer(100, 100, random_state)
+    # answer = genetic.optimize()
+    # print("fitness: ", answer.fitness)
+    # print("values: ", answer.values)
 
-    combine_plots([beam_search, random_beam_search, simulated_annealing, genetic])  
-    
+    combine_plots({
+        'Beam Search': beam_search,
+        'Random Beam Search': random_beam_search,
+        'Simulated Annealing': simulated_annealing,
+        # 'Genetic Algorithm': genetic
+    })

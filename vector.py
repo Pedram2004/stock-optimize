@@ -69,27 +69,38 @@ class Vector:
                                                             / (plane_normal_vector_length ** 2)))
         return proj_i / np.linalg.norm(proj_i)
 
-    def get_neighbours(self, radius: float) -> list["Vector"]:
-        unit_vectors = np.eye(Vector.len())
-        projected_vectors = []
-        for unit_vector in unit_vectors:
-            projected_vector = np.add(self.__values, Vector.__vector_projection(unit_vector) * radius)
-            if (abs(1 - projected_vector.sum()) <= 10 ** -5) and min(projected_vector) >= 0:
-                projected_vectors.append(projected_vector)
+    # def get_neighbours(self, radius: float) -> list["Vector"]:
+    #     unit_vectors = np.eye(Vector.len())
+    #     projected_vectors = []
+    #     for unit_vector in unit_vectors:
+    #         projected_vector = np.add(self.__values, Vector.__vector_projection(unit_vector) * radius)
+    #         if (abs(1 - projected_vector.sum()) <= 10 ** -5) and min(projected_vector) >= 0:
+    #             projected_vectors.append(projected_vector)
 
-        num_deficient_vectors = int(len(projected_vectors) - (Vector.__number_children / 2))
-        if num_deficient_vectors < 0:
-            parent_vectors = projected_vectors.copy()
-            for i in range(abs(num_deficient_vectors)):
-                parent1_index = np.random.randint(low=0, high=len(parent_vectors))
-                parent2_index = (parent1_index + 1) % len(parent_vectors)
-                child_vector = parent_vectors[parent1_index] + parent_vectors[parent2_index]
-                del parent_vectors[parent1_index:parent2_index + 1]
-                projected_vectors.append(child_vector)
-        elif num_deficient_vectors > 0:
-            for i in range(num_deficient_vectors):
-                vector_index = np.random.randint(low=0, high=len(projected_vectors))
-                projected_vectors.pop(vector_index)
+    #     num_deficient_vectors = int(len(projected_vectors) - (Vector.__number_children / 2))
+    #     if num_deficient_vectors < 0:
+    #         parent_vectors = projected_vectors.copy()
+    #         for i in range(abs(num_deficient_vectors)):
+    #             parent1_index = np.random.randint(low=0, high=len(parent_vectors))
+    #             parent2_index = (parent1_index + 1) % len(parent_vectors)
+    #             child_vector = parent_vectors[parent1_index] + parent_vectors[parent2_index]
+    #             del parent_vectors[parent1_index:parent2_index + 1]
+    #             projected_vectors.append(child_vector)
+    #     elif num_deficient_vectors > 0:
+    #         for i in range(num_deficient_vectors):
+    #             vector_index = np.random.randint(low=0, high=len(projected_vectors))
+    #             projected_vectors.pop(vector_index)
 
-        projected_vectors.extend([-1 * neighbour_vector for neighbour_vector in projected_vectors])
-        return [Vector(neighbour_vector) for neighbour_vector in projected_vectors]
+    #     projected_vectors.extend([-1 * neighbour_vector for neighbour_vector in projected_vectors])
+    #     return [Vector(neighbour_vector) for neighbour_vector in projected_vectors]
+
+    def get_neighbours(self, learning_rate: float) -> list["Vector"]:
+        neighbours = []
+        for index in range(Vector.len()):
+            mutation_value = np.random.normal(scale=learning_rate)
+            for i in [-1, 1]:
+                values = self.values.copy()
+                values[index] += mutation_value * i
+                values = np.clip(values, 0, 1)
+                neighbours.append(Vector(values))
+        return neighbours
