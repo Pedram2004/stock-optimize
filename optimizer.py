@@ -143,12 +143,13 @@ class SimulatedAnnealingOptimizer(Optimizer):
     def __init__(self, num_iterations: int, learning_rate: float = 0.1, random_state: int = 42):
         super().__init__(num_iterations, random_state)
         self.__current_state = Vector(np.random.uniform(size=Vector.len()))
-        self.__neighbours = (self.__current_state, self.__current_state.get_neighbors()) #TODO radius unfilled
         self.__LEARNING_RATE = learning_rate
+        self.__neighbours = (self.__current_state, self.__current_state.get_neighbours(self.__LEARNING_RATE))
+
 
     def __perturbate(self) -> Vector:
         if self.__current_state != self.__neighbours[0]:
-            self.__neighbours = (self.__current_state, self.__current_state.get_neighbors(radius=self.__LEARNING_RATE))
+            self.__neighbours = (self.__current_state, self.__current_state.get_neighbours(radius=self.__LEARNING_RATE))
         new_state = np.random.choice(self.__neighbours[1])
         self.__neighbours[1].remove(new_state)
         return new_state

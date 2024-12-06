@@ -68,12 +68,12 @@ class Vector:
                                                             / (plane_normal_vector_length ** 2)))
         return proj_i / np.linalg.norm(proj_i)
 
-    def get_neighbors(self, radius: float) -> list["Vector"]:
+    def get_neighbours(self, radius: float) -> list["Vector"]:
         unit_vectors = np.eye(Vector.len())
         projected_vectors = []
         for unit_vector in unit_vectors:
             projected_vector = np.add(self.__values, Vector.__vector_projection(unit_vector) * radius)
-            if sum(projected_vector) == 1 and min(projected_vector) >= 0:
+            if (abs(1 - projected_vector.sum()) <= 10 ** -5) and min(projected_vector) >= 0:
                 projected_vectors.append(projected_vector)
 
         num_deficient_vectors = int(len(projected_vectors) - (Vector.__NUMBER_CHILDREN / 2))
