@@ -116,7 +116,7 @@ class BeamSearchOptimizer(Optimizer):
             for vector in self.__beam:
                 neighbors.extend(vector.get_neighbours(self.__LEARNING_RATE))
             best_neighbors = heapq.nlargest(self.__beam_length, neighbors, key=lambda
-                x: x.fitness)  # TODO: check with pedram if we should account for the case where the beam length is less than log of the number of neighbors
+                x: x.fitness)
             self.__beam = best_neighbors
 
             self.__iterations.append(max(self.__beam).fitness)
@@ -160,18 +160,18 @@ class SimulatedAnnealingOptimizer(Optimizer):
         self.__iterations = []
 
     def __perturbate(self) -> Vector:
-        if self.__current_state != self.__neighbours[0]:
+        if self.__current_state != self.__neighbours[0] or not self.__neighbours[1]:
             self.__neighbours = (self.__current_state, self.__current_state.get_neighbours(self.__LEARNING_RATE))
         new_state = np.random.choice(self.__neighbours[1])
         self.__neighbours[1].remove(new_state)
         return new_state
 
-    def __accept_change(self, new_state: Vector, temperature: int) -> bool:
+    def __accept_change(self, new_state: Vector, temperature: float) -> bool:
         delta_e = new_state.fitness - self.__current_state.fitness
-        if delta_e < 0:
+        if delta_e > 0:
             return True
         else:
-            acceptance_probability = np.exp(-delta_e / temperature)
+            acceptance_probability = np.exp(delta_e / temperature)
             if np.random.uniform() <= acceptance_probability:
                 return True
 
@@ -180,7 +180,7 @@ class SimulatedAnnealingOptimizer(Optimizer):
     def optimize(self) -> Vector:
         for temperature in range(self._num_iterations, 0, -1):
             new_state = self.__perturbate()
-            if self.__accept_change(new_state, temperature):
+            if self.__accept_change(new_state, (temperature/self._num_iterations)**1.5):
                 self.__current_state = new_state
             self.__iterations.append(self.__current_state.fitness)
         return self.__current_state

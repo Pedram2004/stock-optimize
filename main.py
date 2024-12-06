@@ -36,7 +36,7 @@ if __name__ == '__main__':
     random_state = 42
 
     print("-----------------Beam Search-----------------")
-    beam_search = BeamSearchOptimizer(10, 100, 0.001, random_state)
+    beam_search = BeamSearchOptimizer(10, 1000, 0.001, random_state)
     answer = beam_search.optimize()
     print("fitness: ", answer.fitness)
     print("values: ", answer.values)
@@ -48,20 +48,20 @@ if __name__ == '__main__':
     print("values: ", answer.values)
 
     print("-----------------Simulated Annealing-----------------")
-    simulated_annealing = SimulatedAnnealingOptimizer(100, 0.001, random_state)
+    simulated_annealing = SimulatedAnnealingOptimizer(12000, 0.12, random_state)
     answer = simulated_annealing.optimize()
     print("fitness: ", answer.fitness)
     print("values: ", answer.values)
 
-    # print("-----------------Genetic Algorithm-----------------")
-    # genetic = GeneticAlgorithmOptimizer(100, 100, random_state)
-    # answer = genetic.optimize()
-    # print("fitness: ", answer.fitness)
-    # print("values: ", answer.values)
+    print("-----------------Genetic Algorithm-----------------")
+    genetic = GeneticAlgorithmOptimizer(100, 10, random_state)
+    answer = genetic.optimize()
+    print("fitness: ", answer.fitness)
+    print("values: ", answer.values)
 
     combine_plots({
         'Beam Search': beam_search,
         'Random Beam Search': random_beam_search,
         'Simulated Annealing': simulated_annealing,
-        # 'Genetic Algorithm': genetic
+        'Genetic Algorithm': genetic
     })
