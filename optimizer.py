@@ -98,7 +98,7 @@ class GeneticAlgorithmOptimizer(Optimizer):
 
 
 class BeamSearchOptimizer(Optimizer):
-    def __init__(self, num_iterations: int, beam_length: int, random_state: int = 42):
+    def __init__(self, beam_length: int, num_iterations: int, random_state: int = 42):
         super().__init__(num_iterations, random_state)
         self.__beam_length = beam_length
         self.__beam = [Vector(np.random.uniform(size=Vector.len())) for _ in range(self.__beam_length)]
@@ -117,7 +117,7 @@ class BeamSearchOptimizer(Optimizer):
 
 
 class RandomBeamSearchOptimizer(Optimizer):
-    def __init__(self, num_iterations: int, beam_length: int, random_state: int = 42):
+    def __init__(self, beam_length: int, num_iterations: int, random_state: int = 42):
         super().__init__(num_iterations, random_state)
         self.__beam_length = beam_length
         self.__beam = [Vector(np.random.uniform(size=Vector.len())) for _ in range(self.__beam_length)]
@@ -132,6 +132,41 @@ class RandomBeamSearchOptimizer(Optimizer):
             best_neighbors = np.random.choice(neighbors, size=self.__beam_length, replace=False, p=prob)
             self.__beam = best_neighbors
         return max(self.__beam, key=lambda x: x.fitness)
+
+    def draw_chart(self) -> None:
+        pass
+
+
+class SimulatedAnnealingOptimizer(Optimizer):
+    def __init__(self, num_iterations: int, random_state: int = 42):
+        super().__init__(num_iterations, random_state)
+        self.__current_state = Vector(np.random.uniform(size=Vector.len()))
+        self.__neighnors = (self.__current_state, self.__current_state.get_neighbors())
+
+    def __perturbate(self) -> Vector:
+        if self.__current_state != self.__neighnors[0]:
+            self.__neighnors = (self.__current_state, self.__current_state.get_neighbors())
+        new_state = np.random.choice(self.__neighnors[1])
+        self.__neighnors[1].remove(new_state)
+        return new_state
+
+    def __accept_change(self, new_state: Vector, temprature: int) -> bool:
+        delta_e = new_state.fitness - self.__current_state.fitness
+        if delta_e < 0:
+            return True
+        else:
+            acceptance_probability = np.exp(-delta_e / temprature)
+            if np.random.uniform() <= acceptance_probability:
+                return True
+            
+        return False
+
+    def optimize(self) -> Vector:
+        for temperature in range(self._num_iterations, 0, -1):
+            new_state = self.__perturbate()
+            if self.__accept_change(new_state, temperature):
+                self.__current_state = new_state
+        return self.__current_state
 
     def draw_chart(self) -> None:
         pass
