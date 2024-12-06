@@ -6,19 +6,19 @@ import heapq
 
 
 class GeneticAlgorithmOptimizer(Optimizer):
-    __MUTATION_NORMAL_DEVIATION = 0.1
-    __MUTATION_PERCENTAGE = 0.03
+    __MUTATION_PERCENTAGE = 0.1
     __ELITE_PERCENTAGE = 0.1
-    __LOWER_POTENTIAL_PERCENTAGE = 0.05
-    __MATING_POOL_PERCENTAGE = 0.85
-    __TOURNAMENT_PERCENTAGE = 0.05
+    __LOWER_POTENTIAL_PERCENTAGE = 0.1
+    __MATING_POOL_PERCENTAGE = 0.8
+    __TOURNAMENT_PERCENTAGE = 0.06
 
-    def __init__(self, num_individuals: int, num_iterations: int, random_state: int = 1002):
+    def __init__(self, num_individuals: int, num_iterations: int, random_state: int = 42):
         super().__init__(num_iterations, random_state)
         self.__num_individuals = num_individuals
         self.__population: list[Vector] = [GeneticAlgorithmOptimizer.__create_individual() for _ in
                                            range(num_individuals)]
         self.__iterations = []
+        self.__mutation_normal_deviation = 20 * Vector.len()
 
     @staticmethod
     def __create_individual() -> Vector:
@@ -52,10 +52,17 @@ class GeneticAlgorithmOptimizer(Optimizer):
         return [Vector(np.array(child)) for child in children]
 
     @staticmethod
-    def __mutate(vector: Vector) -> Vector:
+    def __one_cut_cross_over(vector_pair: list[Vector]) -> list[Vector]:
+        random_num = np.random.randint(low=0, high=Vector.len())
+        children = [Vector(list(vector_pair[0].values)[:random_num] + list(vector_pair[1].values)[random_num:]),
+                    Vector(list(vector_pair[1].values)[:random_num] + list(vector_pair[0].values)[random_num:])]
+        return children
+
+
+    def __mutate(self, vector: Vector) -> Vector:
         values = vector.values
         num_mutations = np.ceil(abs(np.random.normal()))
-        mutation_value = np.random.normal(scale=GeneticAlgorithmOptimizer.__MUTATION_NORMAL_DEVIATION)
+        mutation_value = np.random.normal(scale=self.__mutation_normal_deviation)
         for i in range(int(num_mutations)):
             rand_int = np.random.randint(low=0, high=Vector.len(), size=1)
             values[rand_int] += abs(mutation_value)
@@ -69,8 +76,9 @@ class GeneticAlgorithmOptimizer(Optimizer):
 
             Vector.max_comparison(True)
             heapq.heapify(current_population)
+            elite = []
             for _ in range(int(self.__num_individuals * GeneticAlgorithmOptimizer.__ELITE_PERCENTAGE)):
-                new_generation.append(heapq.heappop(current_population))
+                elite.append(heapq.heappop(current_population))
 
             Vector.max_comparison(False)
             heapq.heapify(current_population)
@@ -85,14 +93,13 @@ class GeneticAlgorithmOptimizer(Optimizer):
                 parents_indices = np.random.randint(low=0, high=int(
                     self.__num_individuals * GeneticAlgorithmOptimizer.__MATING_POOL_PERCENTAGE), size=2)
                 new_generation.extend(
-                    GeneticAlgorithmOptimizer.__uniform_cross_over([mating_pool[k] for k in parents_indices]))
+                    GeneticAlgorithmOptimizer.__one_cut_cross_over([mating_pool[k] for k in parents_indices]))
 
             for _ in range(int(self.__num_individuals * GeneticAlgorithmOptimizer.__MUTATION_PERCENTAGE)):
-                random_index = np.random.randint(low=0, high=(self.__num_individuals - 1))
-                new_generation[random_index] = GeneticAlgorithmOptimizer.__mutate(new_generation[random_index])
+                random_index = np.random.randint(low=0, high=(len(new_generation) - 1))
+                new_generation[random_index] = self.__mutate(new_generation[random_index])
 
-            self.__population = new_generation
-
+            self.__population = new_generation + elite
             fittest = max(self.__population)
             self.__iterations.append(fittest.fitness)
 
