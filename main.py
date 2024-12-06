@@ -1,5 +1,5 @@
-from vector import Vector
-from optimizer import Optimizer, GeneticAlgorithmOptimizer, BeamSearchOptimizer, RandomBeamSearchOptimizer, SimulatedAnnealingOptimizer
+from Optimizer.vector import Vector
+from Optimizer.optimizer import Optimizer, GeneticAlgorithmOptimizer, BeamSearchOptimizer, RandomBeamSearchOptimizer, SimulatedAnnealingOptimizer
 import matplotlib.pyplot as plt
 from time import time
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     print("values: ", answer.values)
 
     print("-----------------Genetic Algorithm-----------------")
-    genetic = GeneticAlgorithmOptimizer(100, 10, random_state)
+    genetic = GeneticAlgorithmOptimizer(200, 1000, random_state)
     answer = genetic.optimize()
     print("fitness: ", answer.fitness)
     print("values: ", answer.values)

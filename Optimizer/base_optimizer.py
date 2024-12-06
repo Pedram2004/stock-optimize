@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from vector import Vector
+from .vector import Vector
 import numpy as np
 import matplotlib.pyplot as plt
 

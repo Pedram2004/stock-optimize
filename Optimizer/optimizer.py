@@ -1,7 +1,6 @@
-from vector import Vector
-from base_optimizer import Optimizer
+from .vector import Vector
+from .base_optimizer import Optimizer
 import numpy as np
-import matplotlib.pyplot as plt
 import heapq
 
 
