@@ -7,7 +7,7 @@ class Vector:
     __max_comparison: bool = False
 
     def __init__(self, vector: np.array):
-        self.values = vector
+        self.__values = vector
         self.__fitness = self.__fitness_func()
 
     def __eq__(self, other):
@@ -54,13 +54,14 @@ class Vector:
     def __fitness_func(self) -> float:
         portfolio_risk = np.sqrt(np.matmul(
             np.matmul(self.__values, Vector.__covariance_matrix),
-            self.__values)[0])
+            self.__values))
 
-        portfolio_return = np.matmul(self.__values, Vector.__expected_return)[0]
+        portfolio_return = np.matmul(self.__values, Vector.__expected_return)
         return portfolio_return / portfolio_risk
 
-    def get_neighbors(self, r: float) -> list["Vector"]:
+    def get_neighbors(self) -> list["Vector"]:
         pass
+        # r = 0.3
         # unit_vecors = np.eye(self.len())
         # n = np.ones(self.len())
         # n_len = np.linalg.norm(n)
