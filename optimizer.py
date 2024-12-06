@@ -7,10 +7,10 @@ import heapq
 
 class GeneticAlgorithmOptimizer(Optimizer):
     __MUTATION_PERCENTAGE = 0.1
-    __ELITE_PERCENTAGE = 0.1
+    __ELITE_PERCENTAGE = 0.2
     __LOWER_POTENTIAL_PERCENTAGE = 0.1
-    __MATING_POOL_PERCENTAGE = 0.8
-    __TOURNAMENT_PERCENTAGE = 0.06
+    __MATING_POOL_PERCENTAGE = 0.7
+    __TOURNAMENT_PERCENTAGE = 0.07
 
     def __init__(self, num_individuals: int, num_iterations: int, random_state: int = 42):
         super().__init__(num_iterations, random_state)
