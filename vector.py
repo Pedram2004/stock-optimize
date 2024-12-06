@@ -81,11 +81,12 @@ class Vector:
         if num_deficient_vectors < 0:
             parent_vectors = projected_vectors.copy()
             for i in range(abs(num_deficient_vectors)):
-                parent1_index = np.random.randint(low=0, high=len(parent_vectors))
-                parent2_index = (parent1_index + 1) % len(parent_vectors)
-                child_vector = parent_vectors[parent1_index] + parent_vectors[parent2_index]
-                del parent_vectors[parent1_index:parent2_index + 1]
-                projected_vectors.append(child_vector)
+                if len(parent_vectors) >= 2:
+                    parent1_index = np.random.randint(low=0, high=len(parent_vectors))
+                    parent2_index = (parent1_index + 1) % len(parent_vectors)
+                    child_vector = parent_vectors[parent1_index] + parent_vectors[parent2_index]
+                    del parent_vectors[parent1_index:parent2_index + 1]
+                    projected_vectors.append(child_vector)
         elif num_deficient_vectors > 0:
             for i in range(num_deficient_vectors):
                 vector_index = np.random.randint(low=0, high=len(projected_vectors))
