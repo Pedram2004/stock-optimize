@@ -6,18 +6,18 @@ import heapq
 
 
 class GeneticAlgorithmOptimizer(Optimizer):
-    __MUTATION_NORMAL_DEVIATION = 0.3
+    __MUTATION_NORMAL_DEVIATION = 0.1
     __MUTATION_PERCENTAGE = 0.03
     __ELITE_PERCENTAGE = 0.1
-    __LOWER_POTENTIAL_PERCENTAGE = 0.1
-    __MATING_POOL_PERCENTAGE = 0.8
-    __TOURNAMENT_PERCENTAGE = 0.06
+    __LOWER_POTENTIAL_PERCENTAGE = 0.05
+    __MATING_POOL_PERCENTAGE = 0.85
+    __TOURNAMENT_PERCENTAGE = 0.05
 
-    def __init__(self, num_individuals: int, num_iterations: int, random_state: int = 42):
+    def __init__(self, num_individuals: int, num_iterations: int, random_state: int = 1002):
         super().__init__(num_iterations, random_state)
         self.__num_individuals = num_individuals
-        print(self._num_iterations)
-        self.__population: list[Vector] = [GeneticAlgorithmOptimizer.__create_individual() for _ in range(num_individuals)]
+        self.__population: list[Vector] = [GeneticAlgorithmOptimizer.__create_individual() for _ in
+                                           range(num_individuals)]
         self.__iterations = []
 
     @staticmethod
@@ -29,10 +29,11 @@ class GeneticAlgorithmOptimizer(Optimizer):
         total_num = self.__num_individuals
         mating_pool: list[Vector] = []
         for _ in range(int(total_num * GeneticAlgorithmOptimizer.__MATING_POOL_PERCENTAGE)):
-            sub_pool_indices = (np.random.uniform(size=int(total_num * GeneticAlgorithmOptimizer.__TOURNAMENT_PERCENTAGE))
-                                * np.random.randint(low=total_num, high=3 * total_num, size=1)) % total_num
-            sub_pool = [self.__population[j] for j in sub_pool_indices]
-
+            sub_pool_indices = np.ceil(
+                np.random.uniform(size=int(total_num * GeneticAlgorithmOptimizer.__TOURNAMENT_PERCENTAGE))
+                * np.random.randint(low=total_num, high=3 * total_num, size=1)) % (total_num - 1)
+            sub_pool_indices = np.int64(sub_pool_indices)
+            sub_pool = [self.__population[j] for j in list(sub_pool_indices)]
             heapq.heapify(sub_pool)
             mating_pool.append(heapq.heappop(sub_pool))
 
@@ -44,7 +45,7 @@ class GeneticAlgorithmOptimizer(Optimizer):
         children: list[list] = [[], []]
 
         for i in range(Vector.len()):
-            random_num = np.random.randint(low=0, high=2, size=1)  # it is one or zero
+            random_num = np.random.randint(low=0, high=2)  # it is one or zero
             for j in range(2):
                 children[j].append(lookup_dict.get((random_num + j) % 2).values[i])
 
@@ -53,11 +54,11 @@ class GeneticAlgorithmOptimizer(Optimizer):
     @staticmethod
     def __mutate(vector: Vector) -> Vector:
         values = vector.values
-        num_mutations = np.ceil(abs(np.random.normal(size=1)))
-        mutation_value = np.random.normal(scale=GeneticAlgorithmOptimizer.__MUTATION_NORMAL_DEVIATION, size=1)
-        for i in range(num_mutations):
+        num_mutations = np.ceil(abs(np.random.normal()))
+        mutation_value = np.random.normal(scale=GeneticAlgorithmOptimizer.__MUTATION_NORMAL_DEVIATION)
+        for i in range(int(num_mutations)):
             rand_int = np.random.randint(low=0, high=Vector.len(), size=1)
-            values[rand_int] += mutation_value
+            values[rand_int] += abs(mutation_value)
 
         return Vector(values)
 
@@ -78,23 +79,25 @@ class GeneticAlgorithmOptimizer(Optimizer):
 
             mating_pool = self.__selection()
             new_generation_percentage = (
-                    (1 - (GeneticAlgorithmOptimizer.__LOWER_POTENTIAL_PERCENTAGE + GeneticAlgorithmOptimizer.__ELITE_PERCENTAGE)) / 2)
+                    (1 - (GeneticAlgorithmOptimizer.__LOWER_POTENTIAL_PERCENTAGE +
+                          GeneticAlgorithmOptimizer.__ELITE_PERCENTAGE)) / 2)
             for _ in range(int(self.__num_individuals * new_generation_percentage)):
-                parents_indices = [k for k in np.random.randint(low=0, high=int(
-                    self.__num_individuals * GeneticAlgorithmOptimizer.__MATING_POOL_PERCENTAGE), size=2)]
-                new_generation.extend(GeneticAlgorithmOptimizer.__uniform_cross_over([mating_pool[k] for k in parents_indices]))
+                parents_indices = np.random.randint(low=0, high=int(
+                    self.__num_individuals * GeneticAlgorithmOptimizer.__MATING_POOL_PERCENTAGE), size=2)
+                new_generation.extend(
+                    GeneticAlgorithmOptimizer.__uniform_cross_over([mating_pool[k] for k in parents_indices]))
 
             for _ in range(int(self.__num_individuals * GeneticAlgorithmOptimizer.__MUTATION_PERCENTAGE)):
-                random_index = np.random.randint(low=0, high=self.__num_individuals + 1, size=1)
+                random_index = np.random.randint(low=0, high=(self.__num_individuals - 1))
                 new_generation[random_index] = GeneticAlgorithmOptimizer.__mutate(new_generation[random_index])
 
             self.__population = new_generation
 
             fittest = max(self.__population)
             self.__iterations.append(fittest.fitness)
-            
+
         return fittest
-    
+
     def get_plot(self) -> plt.Figure:
         fig, ax = plt.subplots()
         ax.plot(x=range(self._num_iterations), y=self.__iterations)
@@ -104,6 +107,7 @@ class GeneticAlgorithmOptimizer(Optimizer):
         ax.set_color('red')
         ax.legend(['Genetic Algorithm'], loc='lower right')
         return fig
+
 
 class BeamSearchOptimizer(Optimizer):
     def __init__(self, beam_length: int, num_iterations: int, learning_rate: float = 0.1, random_state: int = 42):
@@ -118,7 +122,8 @@ class BeamSearchOptimizer(Optimizer):
             neighbors = []
             for vector in self.__beam:
                 neighbors.extend(vector.get_neighbours(self.__LEARNING_RATE))
-            best_neighbors = heapq.nlargest(self.__beam_length, neighbors, key=lambda x: x.fitness) # TODO: check with pedram if we should account for the case where the beam length is less than log of the number of neighbors
+            best_neighbors = heapq.nlargest(self.__beam_length, neighbors, key=lambda
+                x: x.fitness)  # TODO: check with pedram if we should account for the case where the beam length is less than log of the number of neighbors
             self.__beam = best_neighbors
 
             self.__iterations.append(max(self.__beam).fitness)
@@ -152,7 +157,7 @@ class RandomBeamSearchOptimizer(Optimizer):
             prob /= prob.sum()
             best_neighbors = np.random.choice(neighbors, size=self.__beam_length, replace=False, p=prob)
             self.__beam = best_neighbors
-            
+
             self.__iterations.append(max(self.__beam).fitness)
         return max(self.__beam, key=lambda x: x.fitness)
 
@@ -175,7 +180,6 @@ class SimulatedAnnealingOptimizer(Optimizer):
         self.__neighbours = (self.__current_state, self.__current_state.get_neighbours(self.__LEARNING_RATE))
         self.__iterations = []
 
-
     def __perturbate(self) -> Vector:
         if self.__current_state != self.__neighbours[0]:
             self.__neighbours = (self.__current_state, self.__current_state.get_neighbours(radius=self.__LEARNING_RATE))
@@ -191,7 +195,7 @@ class SimulatedAnnealingOptimizer(Optimizer):
             acceptance_probability = np.exp(-delta_e / temperature)
             if np.random.uniform() <= acceptance_probability:
                 return True
-            
+
         return False
 
     def optimize(self) -> Vector:
@@ -211,4 +215,3 @@ class SimulatedAnnealingOptimizer(Optimizer):
         ax.set_color('green')
         ax.legend(['Simulated Annealing'], loc='lower right')
         return fig
-    
