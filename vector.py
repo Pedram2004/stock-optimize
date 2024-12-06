@@ -58,3 +58,12 @@ class Vector:
 
         portfolio_return = np.matmul(self.__values, Vector.__expected_return)[0]
         return portfolio_return / portfolio_risk
+
+    def get_neighbors(self, r: float) -> list["Vector"]:
+        pass
+        # unit_vecors = np.eye(self.len())
+        # n = np.ones(self.len())
+        # n_len = np.linalg.norm(n)
+        # proj_i = np.subtract(i, n * (np.dot(i, n) / (n_len ** 2)))
+        # proj_i = (proj_i / np.linalg.norm(proj_i)) * r
+        # return [Vector(np.add(self.values, proj_i)), Vector(np.add(self.values, -1 * proj_i))]

@@ -1,6 +1,7 @@
 from vector import Vector
 from base_optimizer import Optimizer
 import numpy as np
+import matplotlib.pyplot as plt
 import heapq
 
 
@@ -92,5 +93,26 @@ class GeneticAlgorithmOptimizer(Optimizer):
 
         return highest_fitness_chromosomes
     
+    def draw_chart(self) -> None:
+        pass
+
+
+
+
+class BeamSearchOptimizer(Optimizer):
+    def __init__(self, num_iterations: int, beam_length: int, random_state: int = 42):
+        super().__init__(num_iterations, random_state)
+        self.__beam_length = beam_length
+        self.__beam = [Vector(np.random.uniform(size=Vector.len())) for _ in range(self.__beam_length)]
+
+    def optimize(self) -> Vector:
+        for _ in range(self._num_iterations):
+            neighbors = []
+            for vector in self.__beam:
+                neighbors.extend(vector.get_neighbors())
+            best_neighbors = heapq.nlargest(self.__beam_length, neighbors, key=lambda x: x.fitness) # TODO: check with pedram if we should account for the case where the beam length is less than log of the number of neighbors
+            self.__beam = best_neighbors
+        return max(self.__beam, key=lambda x: x.fitness)
+
     def draw_chart(self) -> None:
         pass
