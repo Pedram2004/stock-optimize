@@ -18,6 +18,7 @@ class GeneticAlgorithmOptimizer(Optimizer):
         self.__num_individuals = num_individuals
         print(self._num_iterations)
         self.__population: list[Vector] = [GeneticAlgorithmOptimizer.__create_individual() for _ in range(num_individuals)]
+        self.__iterations = []
 
     @staticmethod
     def __create_individual() -> Vector:
@@ -27,7 +28,7 @@ class GeneticAlgorithmOptimizer(Optimizer):
     def __selection(self) -> list[Vector]:
         total_num = self.__num_individuals
         mating_pool: list[Vector] = []
-        for i in range(int(total_num * GeneticAlgorithmOptimizer.__MATING_POOL_PERCENTAGE)):
+        for _ in range(int(total_num * GeneticAlgorithmOptimizer.__MATING_POOL_PERCENTAGE)):
             sub_pool_indices = (np.random.uniform(size=int(total_num * GeneticAlgorithmOptimizer.__TOURNAMENT_PERCENTAGE))
                                 * np.random.randint(low=total_num, high=3 * total_num, size=1)) % total_num
             sub_pool = [self.__population[j] for j in sub_pool_indices]
@@ -60,8 +61,7 @@ class GeneticAlgorithmOptimizer(Optimizer):
 
         return Vector(values)
 
-    def optimize(self) -> list[float]:
-        highest_fitness_chromosomes: list[float] = []
+    def optimize(self) -> Vector:
         for _ in range(self._num_iterations):
             new_generation: list[Vector] = []
             current_population: list[Vector] = self.__population.copy()
@@ -89,13 +89,21 @@ class GeneticAlgorithmOptimizer(Optimizer):
                 new_generation[random_index] = GeneticAlgorithmOptimizer.__mutate(new_generation[random_index])
 
             self.__population = new_generation
-            highest_fitness_chromosomes.append((max(self.__population)).fitness)
 
-        return highest_fitness_chromosomes
+            fittest = max(self.__population)
+            self.__iterations.append(fittest.fitness)
+            
+        return fittest
     
-    def draw_chart(self) -> None:
-        pass
-
+    def get_plot(self) -> plt.Figure:
+        fig, ax = plt.subplots()
+        ax.plot(x=range(self._num_iterations), y=self.__iterations)
+        ax.set_title(f'Genetic Algorithm - Solution Fitness: {self.__iterations[-1]}')
+        ax.set_xlabel('Iterations')
+        ax.set_ylabel('Fitness')
+        ax.set_color('red')
+        ax.legend(['Genetic Algorithm'], loc='lower right')
+        return fig
 
 class BeamSearchOptimizer(Optimizer):
     def __init__(self, beam_length: int, num_iterations: int, learning_rate: float = 0.1, random_state: int = 42):
@@ -103,6 +111,7 @@ class BeamSearchOptimizer(Optimizer):
         self.__beam_length = beam_length
         self.__beam = [Vector(np.random.uniform(size=Vector.len())) for _ in range(self.__beam_length)]
         self.__LEARNING_RATE = learning_rate
+        self.__iterations = []
 
     def optimize(self) -> Vector:
         for _ in range(self._num_iterations):
@@ -111,10 +120,19 @@ class BeamSearchOptimizer(Optimizer):
                 neighbors.extend(vector.get_neighbours(self.__LEARNING_RATE))
             best_neighbors = heapq.nlargest(self.__beam_length, neighbors, key=lambda x: x.fitness) # TODO: check with pedram if we should account for the case where the beam length is less than log of the number of neighbors
             self.__beam = best_neighbors
+
+            self.__iterations.append(max(self.__beam).fitness)
         return max(self.__beam, key=lambda x: x.fitness)
 
-    def draw_chart(self) -> None:
-        pass
+    def get_plot(self) -> plt.Figure:
+        fig, ax = plt.subplots()
+        ax.plot(x=range(self._num_iterations), y=self.__iterations)
+        ax.set_title(f'Beam Search (Heuristic) - Solution Fitness: {self.__iterations[-1]}')
+        ax.set_xlabel('Iterations')
+        ax.set_ylabel('Fitness')
+        ax.set_color('blue')
+        ax.legend(['Beam Search'], loc='upper right')
+        return fig
 
 
 class RandomBeamSearchOptimizer(Optimizer):
@@ -123,6 +141,7 @@ class RandomBeamSearchOptimizer(Optimizer):
         self.__beam_length = beam_length
         self.__beam = [Vector(np.random.uniform(size=Vector.len())) for _ in range(self.__beam_length)]
         self.__LEARNING_RATE = learning_rate
+        self.__iterations = []
 
     def optimize(self) -> Vector:
         for _ in range(self._num_iterations):
@@ -133,10 +152,19 @@ class RandomBeamSearchOptimizer(Optimizer):
             prob /= prob.sum()
             best_neighbors = np.random.choice(neighbors, size=self.__beam_length, replace=False, p=prob)
             self.__beam = best_neighbors
+            
+            self.__iterations.append(max(self.__beam).fitness)
         return max(self.__beam, key=lambda x: x.fitness)
 
-    def draw_chart(self) -> None:
-        pass
+    def get_plot(self) -> plt.Figure:
+        fig, ax = plt.subplots()
+        ax.plot(x=range(self._num_iterations), y=self.__iterations)
+        ax.set_title(f'Random Local Beam Search (Heuristic) - Solution Fitness: {self.__iterations[-1]}')
+        ax.set_xlabel('Iterations')
+        ax.set_ylabel('Fitness')
+        ax.set_color('orange')
+        ax.legend(['Random Local Beam Search'], loc='lower right')
+        return fig
 
 
 class SimulatedAnnealingOptimizer(Optimizer):
@@ -145,6 +173,7 @@ class SimulatedAnnealingOptimizer(Optimizer):
         self.__current_state = Vector(np.random.uniform(size=Vector.len()))
         self.__LEARNING_RATE = learning_rate
         self.__neighbours = (self.__current_state, self.__current_state.get_neighbours(self.__LEARNING_RATE))
+        self.__iterations = []
 
 
     def __perturbate(self) -> Vector:
@@ -170,7 +199,16 @@ class SimulatedAnnealingOptimizer(Optimizer):
             new_state = self.__perturbate()
             if self.__accept_change(new_state, temperature):
                 self.__current_state = new_state
+            self.__iterations.append(self.__current_state.fitness)
         return self.__current_state
 
-    def draw_chart(self) -> None:
-        pass
+    def get_plot(self) -> plt.Figure:
+        fig, ax = plt.subplots()
+        ax.plot(x=range(self._num_iterations), y=self.__iterations)
+        ax.set_title(f'Simulated Annealing - Solution Fitness: {self.__iterations[-1]}')
+        ax.set_xlabel('Iterations')
+        ax.set_ylabel('Fitness')
+        ax.set_color('green')
+        ax.legend(['Simulated Annealing'], loc='lower right')
+        return fig
+    

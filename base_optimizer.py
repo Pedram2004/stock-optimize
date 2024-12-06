@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from vector import Vector
 import numpy as np
+import matplotlib.pyplot as plt
 
 class Optimizer(ABC):
     def __init__(self, num_iterations: int, random_state: int):
@@ -12,5 +13,5 @@ class Optimizer(ABC):
         pass
 
     @abstractmethod
-    def draw_chart(self) -> None:
+    def get_plot(self) -> plt.Figure:
         pass

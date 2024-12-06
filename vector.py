@@ -13,7 +13,7 @@ class Vector:
 
     def __eq__(self, other):
         if isinstance(other, Vector):
-            return self.__values == other.__values
+            return (self.__values == other.__values).all()
 
         return False
 
