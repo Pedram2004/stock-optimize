@@ -5,9 +5,10 @@ class Vector:
     __covariance_matrix: np.array
     __expected_return: np.array
     __max_comparison: bool = False
+    __NUMBER_CHILDREN = 8
 
     def __init__(self, vector: np.array):
-        self.__values = vector
+        self.values = vector
         self.__fitness = self.__fitness_func()
 
     def __eq__(self, other):
@@ -59,15 +60,37 @@ class Vector:
         portfolio_return = np.matmul(self.__values, Vector.__expected_return)
         return portfolio_return / portfolio_risk
 
+    @staticmethod
+    def __vector_projection(vector: np.array) -> np.array:
+        plane_normal_vector = np.ones(Vector.len())
+        plane_normal_vector_length = np.linalg.norm(plane_normal_vector)
+        proj_i = np.subtract(vector, plane_normal_vector * (np.dot(vector, plane_normal_vector)
+                                                            / (plane_normal_vector_length ** 2)))
+        return proj_i / np.linalg.norm(proj_i)
+
     def get_neighbors(self, radius: float) -> list["Vector"]:
-        unit_vectors = np.eye(self.len())
-        neighbors = []
-        normal_vector = np.ones(self.len())
-        normal_vector_len = np.linalg.norm(normal_vector)
-        for i in unit_vectors:
-            proj_i = np.subtract(i, normal_vector * (np.dot(i, normal_vector) / (normal_vector_len ** 2)))
-            proj_i = (proj_i / np.linalg.norm(proj_i)) * radius
-            neighbors.append(Vector(np.add(self.values, proj_i)))
-            neighbors.append(Vector(np.add(self.values, -1 * proj_i)))
-        
-        return neighbors
+        unit_vectors = np.eye(Vector.len())
+        projected_vectors = []
+        for unit_vector in unit_vectors:
+            projected_vector = np.add(self.__values, Vector.__vector_projection(unit_vector) * radius)
+            if sum(projected_vector) == 1 and min(projected_vector) >= 0:
+                projected_vectors.append(projected_vector)
+
+        num_deficient_vectors = int(len(projected_vectors) - (Vector.__NUMBER_CHILDREN / 2))
+        if num_deficient_vectors < 0:
+            parent_vectors = projected_vectors.copy()
+            for i in range(abs(num_deficient_vectors)):
+                parent1_index = np.random.randint(low=0, high=len(parent_vectors), size=1)
+                parent2_index = (parent1_index + 1) % len(parent_vectors)
+                child_vector = parent_vectors[parent1_index] + parent_vectors[parent2_index]
+                parent_vectors.pop(parent1_index)
+                parent_vectors.pop(parent2_index)
+                projected_vectors.append(child_vector)
+        elif num_deficient_vectors > 0:
+            for i in range(num_deficient_vectors):
+                vector_index = np.random.randint(low=0, high=len(projected_vectors), size=1)
+                projected_vectors.pop(vector_index)
+
+        return projected_vectors
+
+
