@@ -108,7 +108,7 @@ class BeamSearchOptimizer(Optimizer):
         for _ in range(self._num_iterations):
             neighbors = []
             for vector in self.__beam:
-                neighbors.extend(vector.get_neighbors(self.__LEARNING_RATE))
+                neighbors.extend(vector.get_neighbours(self.__LEARNING_RATE))
             best_neighbors = heapq.nlargest(self.__beam_length, neighbors, key=lambda x: x.fitness) # TODO: check with pedram if we should account for the case where the beam length is less than log of the number of neighbors
             self.__beam = best_neighbors
         return max(self.__beam, key=lambda x: x.fitness)
@@ -128,7 +128,7 @@ class RandomBeamSearchOptimizer(Optimizer):
         for _ in range(self._num_iterations):
             neighbors = []
             for vector in self.__beam:
-                neighbors.extend(vector.get_neighbors(self.__LEARNING_RATE))
+                neighbors.extend(vector.get_neighbours(self.__LEARNING_RATE))
             prob = np.array([vector.fitness for vector in neighbors])
             prob /= prob.sum()
             best_neighbors = np.random.choice(neighbors, size=self.__beam_length, replace=False, p=prob)

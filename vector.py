@@ -5,7 +5,7 @@ class Vector:
     __covariance_matrix: np.array
     __expected_return: np.array
     __max_comparison: bool = False
-    __NUMBER_CHILDREN = 8
+    __number_children: int
 
     def __init__(self, vector: np.array):
         self.values = vector
@@ -41,7 +41,7 @@ class Vector:
 
     @classmethod
     def len(cls) -> int:
-        return 3
+        return len(cls.__expected_return)
 
     @classmethod
     def max_comparison(cls, boolean_value: bool):
@@ -51,6 +51,7 @@ class Vector:
     def set_class_variables(cls, expected_return: list, covariance_matrix: list[list]):
         cls.__covariance_matrix = np.array(covariance_matrix)
         cls.__expected_return = np.array(expected_return)
+        cls.__number_children = 2 * cls.len() if cls.len() > 5 else 10
 
     def __fitness_func(self) -> float:
         portfolio_risk = np.sqrt(np.matmul(
@@ -76,7 +77,7 @@ class Vector:
             if (abs(1 - projected_vector.sum()) <= 10 ** -5) and min(projected_vector) >= 0:
                 projected_vectors.append(projected_vector)
 
-        num_deficient_vectors = int(len(projected_vectors) - (Vector.__NUMBER_CHILDREN / 2))
+        num_deficient_vectors = int(len(projected_vectors) - (Vector.__number_children / 2))
         if num_deficient_vectors < 0:
             parent_vectors = projected_vectors.copy()
             for i in range(abs(num_deficient_vectors)):
