@@ -36,19 +36,19 @@ if __name__ == '__main__':
     random_state = 42
 
     print("-----------------Beam Search-----------------")
-    beam_search = BeamSearchOptimizer(10, 1000, 0.001, random_state)
+    beam_search = BeamSearchOptimizer(20, 100, 0.5, random_state)
     answer = beam_search.optimize()
     print("fitness: ", answer.fitness)
     print("values: ", answer.values)
 
     print("-----------------Random Beam Search-----------------")
-    random_beam_search = RandomBeamSearchOptimizer(10, 100, 0.001, random_state)
+    random_beam_search = RandomBeamSearchOptimizer(50, 200, 0.15, random_state)
     answer = random_beam_search.optimize()
     print("fitness: ", answer.fitness)
     print("values: ", answer.values)
 
     print("-----------------Simulated Annealing-----------------")
-    simulated_annealing = SimulatedAnnealingOptimizer(12000, 0.12, random_state)
+    simulated_annealing = SimulatedAnnealingOptimizer(10000, 0.5, random_state)
     answer = simulated_annealing.optimize()
     print("fitness: ", answer.fitness)
     print("values: ", answer.values)

@@ -112,7 +112,7 @@ class BeamSearchOptimizer(Optimizer):
 
     def optimize(self) -> Vector:
         for _ in range(self._num_iterations):
-            neighbors = []
+            neighbors = list(self.__beam)
             for vector in self.__beam:
                 neighbors.extend(vector.get_neighbours(self.__LEARNING_RATE))
             best_neighbors = heapq.nlargest(self.__beam_length, neighbors, key=lambda
@@ -136,7 +136,7 @@ class RandomBeamSearchOptimizer(Optimizer):
 
     def optimize(self) -> Vector:
         for _ in range(self._num_iterations):
-            neighbors = []
+            neighbors = list(self.__beam)
             for vector in self.__beam:
                 neighbors.extend(vector.get_neighbours(self.__LEARNING_RATE))
             prob = np.array([vector.fitness for vector in neighbors])
