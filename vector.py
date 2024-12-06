@@ -41,7 +41,7 @@ class Vector:
 
     @classmethod
     def len(cls) -> int:
-        return len(cls.__expected_return)
+        return 3
 
     @classmethod
     def max_comparison(cls, boolean_value: bool):
@@ -80,17 +80,15 @@ class Vector:
         if num_deficient_vectors < 0:
             parent_vectors = projected_vectors.copy()
             for i in range(abs(num_deficient_vectors)):
-                parent1_index = np.random.randint(low=0, high=len(parent_vectors), size=1)
+                parent1_index = np.random.randint(low=0, high=len(parent_vectors))
                 parent2_index = (parent1_index + 1) % len(parent_vectors)
                 child_vector = parent_vectors[parent1_index] + parent_vectors[parent2_index]
-                parent_vectors.pop(parent1_index)
-                parent_vectors.pop(parent2_index)
+                del parent_vectors[parent1_index:parent2_index + 1]
                 projected_vectors.append(child_vector)
         elif num_deficient_vectors > 0:
             for i in range(num_deficient_vectors):
-                vector_index = np.random.randint(low=0, high=len(projected_vectors), size=1)
+                vector_index = np.random.randint(low=0, high=len(projected_vectors))
                 projected_vectors.pop(vector_index)
 
-        return projected_vectors
-
-
+        projected_vectors.extend([-1 * neighbour_vector for neighbour_vector in projected_vectors])
+        return [Vector(neighbour_vector) for neighbour_vector in projected_vectors]
