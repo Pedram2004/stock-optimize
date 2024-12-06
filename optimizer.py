@@ -97,8 +97,6 @@ class GeneticAlgorithmOptimizer(Optimizer):
         pass
 
 
-
-
 class BeamSearchOptimizer(Optimizer):
     def __init__(self, num_iterations: int, beam_length: int, random_state: int = 42):
         super().__init__(num_iterations, random_state)
@@ -111,6 +109,27 @@ class BeamSearchOptimizer(Optimizer):
             for vector in self.__beam:
                 neighbors.extend(vector.get_neighbors())
             best_neighbors = heapq.nlargest(self.__beam_length, neighbors, key=lambda x: x.fitness) # TODO: check with pedram if we should account for the case where the beam length is less than log of the number of neighbors
+            self.__beam = best_neighbors
+        return max(self.__beam, key=lambda x: x.fitness)
+
+    def draw_chart(self) -> None:
+        pass
+
+
+class RandomBeamSearchOptimizer(Optimizer):
+    def __init__(self, num_iterations: int, beam_length: int, random_state: int = 42):
+        super().__init__(num_iterations, random_state)
+        self.__beam_length = beam_length
+        self.__beam = [Vector(np.random.uniform(size=Vector.len())) for _ in range(self.__beam_length)]
+
+    def optimize(self) -> Vector:
+        for _ in range(self._num_iterations):
+            neighbors = []
+            for vector in self.__beam:
+                neighbors.extend(vector.get_neighbors())
+            prob = np.array([vector.fitness for vector in neighbors])
+            prob /= prob.sum()
+            best_neighbors = np.random.choice(neighbors, size=self.__beam_length, replace=False, p=prob)
             self.__beam = best_neighbors
         return max(self.__beam, key=lambda x: x.fitness)
 
